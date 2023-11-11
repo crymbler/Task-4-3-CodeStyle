@@ -7,33 +7,29 @@ public class WaypointMovement : MonoBehaviour
     [SerializeField] private Transform _path;
     [SerializeField] private float _speed;
 
-    private Transform[] _points;
-    private int _currentPoint;
+    private Queue<Transform> _points = new Queue<Transform>();
+    private Transform _target;
 
     private void Start()
     {
-        _points = new Transform[_path.childCount];
+        foreach(Transform point in _path)
+            _points.Enqueue(point);
 
-        for (int i = 0; i < _path.childCount; i++)
-        {
-            _points[i] = _path.GetChild(i).GetComponent<Transform>();
-        }
+        GetNextPoint();
     }
 
     private void Update()
     {
-        Transform target = _points[_currentPoint];
+        transform.position = Vector3.MoveTowards(transform.position, _target.position, _speed * Time.deltaTime);
 
-        transform.position = Vector3.MoveTowards(transform.position, target.position, _speed * Time.deltaTime);
+        if(transform.position == _target.position)
+            GetNextPoint();
+    }
 
-        if (transform.position == target.position)
-        {
-            _currentPoint++;
+    private void GetNextPoint()
+    {
+        _target = _points.Dequeue();
 
-            if (_currentPoint >= _points.Length)
-            {
-                _currentPoint = 0;
-            }
-        }
+        _points.Enqueue(_target);
     }
 }
